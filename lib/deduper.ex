@@ -30,42 +30,62 @@ defmodule Deduper do
 
     # check validity of path-variable as a valid directory.
     case File.dir?(path) do
-      true -> IO.puts "Reading directory-tree from path: #{path}. Please take a cup of tea."
-      false -> IO.puts "Sorry, path #{path} does not exist (as a directory). Please provide a valid path."
+      true  -> IO.puts "Step 1: Reading directory-tree from path: #{path}. Please take a cup of tea."
+      false -> IO.puts "Step 1: Sorry, path #{path} does not exist (as a directory). Please provide a valid path."
     end
 
-    # run directory-tree from path and all sub-dirs
+    # Find all files in directory-tree, starting from from path, and all sub-dirs
     filenames =
+      # The find-command works only on UNIX variants, and has only been tested on OS/X High Sierra
       case {result, exitstatus} = System.cmd("find", [path, "-name", "*.jpg", "-print"], []) do
+
         {result, 0} ->
-          IO.puts "List of filenames has been generated. (Exitstatus 0 from find-command.)"
-          result |> String.split("\n")
+          IO.puts "Step 2: List of filenames has been generated. (Exitstatus 0 from find-command.)"
+          result
+          |> String.split("\n") # Create List out of result of find-command
+          # Cleans up result by removing the empty lines
+          |> Enum.reduce( [], fn(filename, acc) ->
+              if filename != "" do acc ++ ["#{filename}"] end
+             end)
+
         {_, exitstatus} ->
-          IO.puts "Exitstatus ERROR: #{exitstatus}"
+          IO.puts "Step 2: No files found. Exitstatus ERROR: #{exitstatus}"
           ["ERROR"]
+
       end
 
-      IO.puts "Filenames = ", filenames
+      IO.puts "Filenames = "
+      Enum.each( filenames, fn(filename) ->
+        if filename != "" do IO.puts "file: #{filename}" end
+      end)
       IO.puts "End of filenames ====="
-      filenames
 
     # iterates over filenames and creates a unique hash/cypher from (the contents) of each file
     files_fingerprints =
       case filenames do
         ["ERROR"] ->
-          IO.puts "No files found. Sorry."
+          IO.puts "Step 3: No files found. Sorry."
           ["EMPTY LIST"]
         filenames ->
           # EXAMPLE: lijst = Enum.reduce( 1..25, %{}, fn(x, acc) -> Map.put(acc, x, x*x) end)
+          IO.puts "Step 3: Processing files and calculating cyphers. Please take another cup of tea."
           Enum.reduce(filenames, %{}, fn(filename, acc) ->
-            Map.put(acc, filename,
-              { :crypto.hash( :sha256, File.read!("#{filename}") ) |> Base.encode16} )
+            if filename != "" do
+              Map.put(acc, filename,
+                { :crypto.hash( :sha256, File.read!("#{filename}") ) |> Base.encode16} )
+            end
           end)
       end
 
-      IO.puts "Map of files + cipher = ", files_fingerprints
+#      IO.puts "Map of files + cypher = "
+#      Enum.each( files_fingerprints, fn(filename, cypher) ->
+#        IO.puts "file: #{filename} and cypher: #{cypher}"
+#      end)
+#      IO.puts "End of map of files + cypher. ======"
 
+      files_fingerprints
   end
+
 
   def read_dirtree_1(path \\ "/Users/rogier/Dropbox/Camera\ Uploads/2007") do
 
