@@ -25,7 +25,7 @@ defmodule Deduper do
 # check_duplicates(parses)  # input parse_list (i.e. map of tuples)
                             # output list of grouped duplicate-files (i.e. sets of duplicates)
 
-  def read_dirtree_0(path \\ "/Users/rogier/Dropbox/Camera\ Uploads/2007") do
+  def read_dirtree_0(path \\ "/Users/rogier/Dropbox/Camera\ Uploads") do
   # by default, choose given path after \\ when started without a provided path-variable
 
     # check validity of path-variable as a valid directory.
@@ -35,22 +35,28 @@ defmodule Deduper do
     end
 
     # Find all files in directory-tree, starting from from path, and all sub-dirs
+    # Only select files with the designated extensions (!) Change when required!
+    # Note: The find-command works only on UNIX variants, and has only been tested on OS/X High Sierra
+    {result, exitstatus} =
+      #System.cmd("find", ["-E", path, "-regex", ".*\.(jpg|jpeg|gif|png|tif|tiff|pic|pict)"], [])
+      System.cmd("find", ["-E", path, "-regex", ".*\.(gif|png|tif|tiff|pic|pict)"], [])
+
     filenames =
-      # The find-command works only on UNIX variants, and has only been tested on OS/X High Sierra
-      case {result, exitstatus} = System.cmd("find", [path, "-name", "*.jpg", "-print"], []) do
+      case exitstatus  do
 
-        {result, 0} ->
+        0 ->
           IO.puts "Step 2: List of filenames has been generated. (Exitstatus 0 from find-command.)"
-          result
-          |> String.split("\n") # Create List out of result of find-command
-          # Cleans up result by removing the empty lines
-          |> Enum.reduce( [], fn(filename, acc) ->
-              if filename != "" do acc ++ ["#{filename}"] end
-             end)
 
-        {_, exitstatus} ->
-          IO.puts "Step 2: No files found. Exitstatus ERROR: #{exitstatus}"
-          ["ERROR"]
+          result
+          # Create List out of result of find-command
+          |> String.split("\n")
+          # Cleans up result by removing the empty lines
+          #|> Enum.reduce( [], fn(filename, acc) ->
+           #   if filename != "" do acc ++ ["#{filename}"] end
+            # end)
+
+        _ ->
+          IO.puts "Step 2: No files. (Exitstatus not 0 (ERROR) from find-command.)"
 
       end
 
