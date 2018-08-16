@@ -25,8 +25,11 @@ defmodule Deduper do
 # check_duplicates(parses)  # input parse_list (i.e. map of tuples)
                             # output list of grouped duplicate-files (i.e. sets of duplicates)
 
-  def read_dirtree_0(path \\ "/Users/rogier/Dropbox/Camera\ Uploads") do
+  def read_dirtree_0(path \\ "/Users/rogier/Dropbox/Camera\ Uploads/2012") do
   # by default, choose given path after \\ when started without a provided path-variable
+
+  starttime = DateTime.utc_now
+  IO.puts "START: The time is #{starttime}."
 
     # check validity of path-variable as a valid directory.
     case File.dir?(path) do
@@ -38,58 +41,44 @@ defmodule Deduper do
     # Only select files with the designated extensions (!) Change when required!
     # Note: The find-command works only on UNIX variants, and has only been tested on OS/X High Sierra
     {result, exitstatus} =
-      #System.cmd("find", ["-E", path, "-regex", ".*\.(jpg|jpeg|gif|png|tif|tiff|pic|pict)"], [])
-      System.cmd("find", ["-E", path, "-regex", ".*\.(gif|png|tif|tiff|pic|pict)"], [])
+      System.cmd("find", ["-E", path, "-regex", ".*\.(jpg|jpeg|gif|png|tif|tiff|pic|pict)"], [])
+      #System.cmd("find", ["-E", path, "-regex", ".*\.(gif|png|tif|tiff|pic|pict)"], [])
+
+      IO.puts "Inspecting output..."
+      IO.inspect result
 
     filenames =
       case exitstatus  do
 
+        # Succesful execution of directory walkthru (find-command).
         0 ->
-          IO.puts "Step 2: List of filenames has been generated. (Exitstatus 0 from find-command.)"
-
-          result
+          IO.puts "Step 2: Succesful directory walkthru. (Exitstatus 0 from find-command.) Creating map with filenames."
           # Create List out of result of find-command
-          |> String.split("\n")
-          # Cleans up result by removing the empty lines
-          #|> Enum.reduce( [], fn(filename, acc) ->
-           #   if filename != "" do acc ++ ["#{filename}"] end
-            # end)
+          result
+            |> String.split("\n")
+            # The next adds a filename, and substracts an empty line (which is a dirty solution
+            # cleaning empty lines/blanks from the list. (Because add only if not empty does not work !?)
+            # More specific: Enum.reduce BlaBla if filename != "" do BlaBla does not process the != check.
+            |> Enum.reduce( [], fn(filename, acc) -> acc ++ ["#{filename}"] -- [""] end)
 
+        # UNsuccesful execution of directory walkthru.
         _ ->
-          IO.puts "Step 2: No files. (Exitstatus not 0 (ERROR) from find-command.)"
+          IO.puts "Step 2: Problem with directory walkthru. (Exitstatus not 0 (ERROR) from find-command.) No files found."
 
       end
 
-      IO.puts "Filenames = "
-      Enum.each( filenames, fn(filename) ->
-        if filename != "" do IO.puts "file: #{filename}" end
-      end)
-      IO.puts "End of filenames ====="
+      cyphermap =
+        Enum.reduce(filenames, %{}, fn(filename, acc) ->
+            Map.put(acc, filename,
+              :crypto.hash( :sha256, File.read!("#{filename}") ) |> Base.encode16 )
+        end)
 
-    # iterates over filenames and creates a unique hash/cypher from (the contents) of each file
-    files_fingerprints =
-      case filenames do
-        ["ERROR"] ->
-          IO.puts "Step 3: No files found. Sorry."
-          ["EMPTY LIST"]
-        filenames ->
-          # EXAMPLE: lijst = Enum.reduce( 1..25, %{}, fn(x, acc) -> Map.put(acc, x, x*x) end)
-          IO.puts "Step 3: Processing files and calculating cyphers. Please take another cup of tea."
-          Enum.reduce(filenames, %{}, fn(filename, acc) ->
-            if filename != "" do
-              Map.put(acc, filename,
-                { :crypto.hash( :sha256, File.read!("#{filename}") ) |> Base.encode16} )
-            end
-          end)
-      end
+        IO.inspect cyphermap
 
-#      IO.puts "Map of files + cypher = "
-#      Enum.each( files_fingerprints, fn(filename, cypher) ->
-#        IO.puts "file: #{filename} and cypher: #{cypher}"
-#      end)
-#      IO.puts "End of map of files + cypher. ======"
+      finishtime = DateTime.utc_now
+      IO.puts "FINISH: The time is #{finishtime}."
+      #IO.puts "The processing took #{finishtime - starttime}. Amazing, huh!?"
 
-      files_fingerprints
   end
 
 
