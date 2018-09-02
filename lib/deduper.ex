@@ -22,6 +22,10 @@ defmodule Deduper do # Start of module
   def find_dups(path \\ "/Users/rogier/Dropbox/Camera Uploads/2012",
     ftypes \\ "jpg,jpeg,gif,png,tif,tiff,pic,pict,bmp") do
 
+    # TODO: Make options Image, Movie, Audio, ..., All, Other to create extensions
+    # ...where All is *.* wildcard, and Other checks third variable for
+    # ...provided extensions by user (i.e. Deduper.find_dups/3).
+
     # TODO: check_path(path)
     # TODO: check_ftypes(ftypes)
 
@@ -47,7 +51,7 @@ defmodule Deduper do # Start of module
       |> Enum.each( fn {_hash, files} ->                            # For each cluster of duplicates do...
 
             IO.puts "--- Start of #{ Enum.count(files) } duplicate files ---"
-            # While length(files) > 1 AND user_input <> do_nothing do...
+            # TODO: While length(files) > 1 AND user_input <> do_nothing do...
             #   ask which file may be deleted, rinse and repeat
             duplicates = Enum.with_index(files, 1)
             IO.puts "Inspect duplicates: #{inspect duplicates}"
