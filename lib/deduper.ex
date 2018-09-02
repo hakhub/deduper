@@ -29,6 +29,19 @@ defmodule Deduper do # Start of module
     # TODO: check_path(path)
     # TODO: check_ftypes(ftypes)
 
+    option = "image"
+
+    # TODO: check available extensions for various file formats
+    # TODO: complete options
+    case option do
+      "image"       -> ftypes = "jpg,jpeg,gif,png,tif,tiff,pic,pict,bmp"
+      "audio"       -> ftypes = "mp3, aac, aif, aiff"
+      "video"       -> ftypes = "mp4, mpeg, vid, wmv, mov, qt"
+      "document"    -> ftypes = ""
+      "all"         -> ftypes = "*"
+      _             -> ftypes = "*"
+    end
+
     IO.puts "Path: #{path}. (Absolute path: don't forget the slash at the beginning.)"
     IO.puts "Extensions to look for: #{ftypes} ."
 
