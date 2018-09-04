@@ -20,7 +20,7 @@ defmodule Deduper do # Start of module
 
   # MAIN PROCESS
   def find_dups(path \\ "/Users/rogier/Dropbox/Camera Uploads/2012",
-    ftypes \\ "jpg,jpeg,gif,png,tif,tiff,pic,pict,bmp") do
+    option \\ "image") do
 
     # TODO: Make options Image, Movie, Audio, ..., All, Other to create extensions
     # ...where All is *.* wildcard, and Other checks third variable for
@@ -33,14 +33,18 @@ defmodule Deduper do # Start of module
 
     # TODO: check available extensions for various file formats
     # TODO: complete options
-    case option do
-      "image"       -> ftypes = "jpg,jpeg,gif,png,tif,tiff,pic,pict,bmp"
-      "audio"       -> ftypes = "mp3, aac, aif, aiff"
-      "video"       -> ftypes = "mp4, mpeg, vid, wmv, mov, qt"
-      "document"    -> ftypes = ""
-      "all"         -> ftypes = "*"
-      _             -> ftypes = "*"
-    end
+    ftypes =
+      case option do
+        # Avoid spaces between extensions (spaces are taken litterally by Path.wildcard).
+        # For most common extensions, see https://www.computerhope.com/issues/ch001789.htm ...
+        # ...and https://fileinfo.com/filetypes/common
+        "audio"       -> "mp3,aac,aif,aiff,wav"
+        "document"    -> "doc,docx,ppt,pptx,xls,xlsx,pdf,txt,rtf,tex,odt"
+        "image"       -> "jpg,jpeg,gif,png,tif,tiff,pic,pict,bmp"
+        "video"       -> "3g2,3gp,avi,flv,h264,m4v,mkv,mov,mp4,mpeg,qt,vid,wmv"
+        "all"         -> "*"
+        _             -> "*"
+      end
 
     IO.puts "Path: #{path}. (Absolute path: don't forget the slash at the beginning.)"
     IO.puts "Extensions to look for: #{ftypes} ."
@@ -63,7 +67,8 @@ defmodule Deduper do # Start of module
       |> Enum.filter( fn {_hash, files} -> length(files) > 1 end)   # Filter on hash with multiple files
       |> Enum.each( fn {_hash, files} ->                            # For each cluster of duplicates do...
 
-            IO.puts "--- Start of #{ Enum.count(files) } duplicate files ---"
+            nr_of_dups = Enum.count(files)
+            IO.puts "--- Start of #{ nr_of_dups } duplicate files ---"
             # TODO: While length(files) > 1 AND user_input <> do_nothing do...
             #   ask which file may be deleted, rinse and repeat
             duplicates = Enum.with_index(files, 1)
@@ -71,6 +76,7 @@ defmodule Deduper do # Start of module
             Enum.each(duplicates, fn { filename, index} ->
               IO.puts"#{index} - #{filename}" end)
 
+            # TODO: (nr_of_dups - 1) * file-size can be freed
             total_size =
               Enum.count(files, fn(filename) ->
                   IO.puts "#{inspect File.stat!(filename).size} ..."
