@@ -20,16 +20,17 @@ defmodule Deduper do # Start of module
 
   # MAIN PROCESS
   def find_dups(path \\ "/Users/rogier/Dropbox/Camera Uploads/2012",
-    option \\ "image") do
+    option \\ "all") do
 
-    # TODO: Make options Image, Movie, Audio, ..., All, Other to create extensions
-    # ...where All is *.* wildcard, and Other checks third variable for
+    # TODO: Make options Image, Movie, Audio, ..., All and Other to define extensions,
+    # ...where All is the catch-all *.* wildcard, and Other checks third variable for
     # ...provided extensions by user (i.e. Deduper.find_dups/3).
 
     # TODO: check_path(path)
     # TODO: check_ftypes(ftypes)
 
-    option = "image"
+    IO.puts "Options are: audio, document, image, video, all."
+    option = "all"
 
     # TODO: check available extensions for various file formats
     # TODO: complete options
@@ -47,23 +48,27 @@ defmodule Deduper do # Start of module
       end
 
     IO.puts "Path: #{path}. (Absolute path: don't forget the slash at the beginning.)"
-    IO.puts "Extensions to look for: #{ftypes} ."
+    IO.puts "Extensions to look for (option #{option}): #{ftypes} ."
 
     wildcard = "#{path}/**/*.{#{ftypes},#{String.upcase(ftypes)}}"  # Create string for Path.wildcard
     start_time = System.monotonic_time(:millisecond)                # Start the VM clock
 
     # MAIN
+    IO.puts "Executing directory tree walktrough..."
     File.cd!(path, fn ->
       # TODO: Path.wildcard("#{path}/**/*.{#{ftypes}}")
       # ...maybe with wildcard = "#{path}/**/*.{#{ftypes},#{String.upcase(ftypes)}}"
       # ...Path.wildcard("#{wildcard}")
+      IO.puts "Executing filtering..."
+      IO.puts "Executing hash per file..."
       Path.wildcard("#{wildcard}")                                  # Show all relevant files in tree
       |> Enum.filter( fn(filename) -> File.regular?(filename) end)  # Weed out dead links, etc.
-
+      IO.puts "Executing file-grouping..."
       |> Enum.group_by( fn(filename) ->                             # Calc sha256 per file, and group 'm.
            "#{ :crypto.hash( :sha256, File.read!("#{filename}") ) |> Base.encode16 }"
           end)
       # Next, filter on hashes with more than 1 associated file (>1 element in the list)
+      IO.puts "Executing file-grouping on files with same hash..."
       |> Enum.filter( fn {_hash, files} -> length(files) > 1 end)   # Filter on hash with multiple files
       |> Enum.each( fn {_hash, files} ->                            # For each cluster of duplicates do...
 
@@ -77,12 +82,12 @@ defmodule Deduper do # Start of module
               IO.puts"#{index} - #{filename}" end)
 
             # TODO: (nr_of_dups - 1) * file-size can be freed
-            total_size =
-              Enum.count(files, fn(filename) ->
-                  IO.puts "#{inspect File.stat!(filename).size} ..."
-                end)
-
-            IO.puts "--- End of duplicate files (total size #{total_size} bytes ---"
+            # total_size =
+            #   Enum.sum(
+            #     Enum.each(files, fn(filename) -> File.stat!(filename).size end)
+            #   end)
+            # IO.puts "--- End of duplicate files (total size #{total_size} bytes) ---"
+            IO.puts "--- End of duplicate files  ---"
 
           end)
 
