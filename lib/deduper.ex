@@ -1,11 +1,12 @@
-# This module identifies duplicate files within a directory tree, shows them,
-# and when told to do so, deletes them.
-# Syntax: Deduper.find_dups(path, ftypes)
-# Author: Rogue H0F
-
 defmodule Deduper do # Start of module
   @moduledoc """
   Documentation for Deduper.
+  This module identifies duplicate files within a directory tree, shows them,
+  and when told to do so, deletes them.
+  Syntax: Deduper.find_dups(path, ftypes)
+  Author: Rogue
+  Lango:  Elixir
+  File:   deduper (folder with file-tree)
   """
 
   @doc """
@@ -199,55 +200,6 @@ defmodule Deduper do # Start of module
 
         IO.inspect cyphermap
 
-  end
-
-
-
-
-
-### READ, UNDERSTAND IN AWE, LEARN AND APPLY...    ;-)  #######################################
-
-# This snippet of code traverses a directory tree,
-#  and returns a list of duplicate files, with creation-date and file-size (in bytes).
-# Source: https://rosettacode.org/wiki/Find_duplicate_files .
-# Author: Pearl24 (=?)
-
-
-  # Provides a list of all duplicate files in directory "dir", and its subdirs.
-  # Take path (dir) as input, or take the current dir is default
-  def rosetta_find_duplicate_files(dir \\ "/Users/rogier/Dropbox/Camera Uploads/2012") do
-    # Show the directory it will traverse.
-    IO.puts "\nDirectory : #{dir} (Don't forget the slash at the beginning.)"
-    # CD to DIR (if necessary, or stay in current dir), and execute the function on that directory
-    # (and return to the previous directory).
-    File.cd!(dir, fn ->
-      # Filter the output on the "File.ls!" command on real files
-      # "File.regular?" returns TRUE if fname points to a file, or to a valid link (pointing to a file).
-      Enum.filter(File.ls!, fn fname -> File.regular?(fname) end)
-      # Groups the filelist by the function in group_by, in this case filesize,
-      # where the command File.stat! returns file related info (as tuple),
-      # and .size returns the filesize (from that tuple).
-      |> Enum.group_by(fn file -> File.stat!(file).size end)
-      # Filter the ordered list, so only files with filesize > 1 byte will remain.
-      |> Enum.filter(fn {_, files} -> length(files)>1 end)
-      # Perform the following function on each of the remaining files...
-      |> Enum.each(fn {size, files} ->
-           # ... Group all files (by reading them and calculating) their hash MD5 value
-           Enum.group_by(files, fn file -> :erlang.md5(File.read!(file)) end)
-           # CHECK WHAT THE NEXT LINE DOES (AND ALSO ABOVE THIS LINE)!!
-           |> Enum.filter(fn {_, files} -> length(files)>1 end)
-           #  For each MD5 - file combination, do the following...
-           |> Enum.each(fn {_md5, fs} ->
-                # Print separator line]
-                IO.puts "  --------------------------------------------"
-                # Print each pair of duplicate files;
-                # Last modification time (as tuple), size, and filename
-                Enum.each(fs, fn file ->
-                  IO.puts "  Last modification & size: #{inspect File.stat!(file).mtime}\t#{size} File: #{file}"
-                end)
-              end)
-         end)
-    end)
   end
 
 end # End of module
