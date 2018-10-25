@@ -147,50 +147,5 @@ defmodule Deduper do # Start of module
   #   end
   # end
 
-
-  def read_dirtree_0(path \\ "/Users/rogier/Dropbox/Camera\ Uploads/2012") do
-  # by default, choose given path after \\ when started without a provided path-variable
-
-    # Find all files in directory-tree, starting from from path, and all sub-dirs
-    # Only select files with the designated extensions (!) Change when required!
-    # Note: The find-command works only on UNIX variants, and has only been tested on OS/X High Sierra
-    {result, exitstatus} =
-      System.cmd("find", ["-E", path, "-regex", ".*\.(jpg|jpeg|gif|png|tif|tiff|pic|pict)"], [])
-      #System.cmd("find", ["-E", path, "-regex", ".*\.(gif|png|tif|tiff|pic|pict)"], [])
-
-      IO.puts "Inspecting output..."
-      IO.inspect result
-
-    filenames =
-      case exitstatus  do
-
-        # Succesful execution of directory walkthru (find-command).
-        0 ->
-          IO.puts "Step 2: Succesful directory walkthru. (Exitstatus 0 from find-command.) Creating map with filenames."
-          # Create List out of result of find-command
-          result
-            |> String.split("\n")
-            # The next adds a filename, and substracts an empty line (which is a dirty solution
-            # cleaning empty lines/blanks from the list. (Because add only if not empty does not work !?)
-            # More specific: Enum.reduce BlaBla if filename != "" do BlaBla does not process the != check.
-            |> Enum.reduce( [], fn(filename, acc) -> acc ++ ["#{filename}"] -- [""] end)
-
-        # UNsuccesful execution of directory walkthru.
-        _ ->
-          IO.puts "Step 2: Problem with directory walkthru. (Exitstatus not 0 (ERROR) from find-command.) No files found."
-          exit(:boom)
-
-      end
-
-      cyphermap =
-        Enum.reduce(filenames, %{}, fn(filename, acc) ->
-            Map.put(acc, filename,
-              :crypto.hash( :sha256, File.read!("#{filename}") ) |> Base.encode16 )
-        end)
-
-        IO.inspect cyphermap
-
-  end
-
 end # End of module
 
