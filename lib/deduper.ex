@@ -28,6 +28,21 @@ defmodule Deduper do # Start of module
     # ...provided extensions by user (i.e. Deduper.find_dups/3).
 
     # TODO: check_path(path)
+      # Returns path if path given is a valid directory
+      # If no path is given, ask for the pathname to start the search for duplicate files
+      # def path_given(path \\ "") do
+      #   path =
+      #   case path do
+      #     "" ->
+      #       IO.puts "The path is the root of the directory-tree you want to check for duplicate files."
+      #         IO.gets "Please enter the path: "
+      #         |> String.trim
+      #     path ->
+      #       check_path(path)
+      #       path
+      #   end
+      # end
+
     # TODO: check_ftypes(ftypes)
 
     IO.puts "Options are: audio, document, image, video, all."
@@ -104,21 +119,6 @@ defmodule Deduper do # Start of module
     IO.puts "Processing took #{ diff/1000 } seconds, roughly #{ Float.floor( diff/60_000, 2) } minutes."
 
   end
-
-  # Returns path if path given is a valid directory
-  # If no path is given, ask for the pathname to start the search for duplicate files
-  # def path_given(path \\ "") do
-  #   path =
-  #   case path do
-  #     "" ->
-  #       IO.puts "The path is the root of the directory-tree you want to check for duplicate files."
-  #         IO.gets "Please enter the path: "
-  #         |> String.trim
-  #     path ->
-  #       check_path(path)
-  #       path
-  #   end
-  # end
 
   # Check validity of path-variable as a valid directory, returns path when valid, or exit..
   # When no path is passed, it will return the current working directory as default.
