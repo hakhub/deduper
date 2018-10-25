@@ -96,16 +96,6 @@ defmodule Deduper do # Start of module
 
           end)
 
-      # |> Enum.reduce( %{}, fn(filename, acc) ->                     # Create new map
-      #       Map.put(acc, filename,                                  # Key = (unique) filename
-      #         {                                                     # Value = tuple with...
-      #           "#{inspect File.stat!(filename).ctime}",            # file creation datetime
-      #           "#{inspect File.stat!(filename).size}",             # filesize and hash (sha256)
-      #           "#{:crypto.hash( :sha256, File.read!("#{filename}") ) |> Base.encode16}"
-      #         }
-      #       )
-      #    end)
-
     end)
 
     # used_time = stop_time - start_time in milliseconds
