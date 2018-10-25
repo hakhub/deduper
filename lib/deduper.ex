@@ -47,6 +47,7 @@ defmodule Deduper do # Start of module
         _             -> "*"
       end
 
+    IO.puts "==== COMMAND INFO ===="
     IO.puts "Path: #{path}. (Absolute path: don't forget the slash at the beginning.)"
     IO.puts "Extensions to look for (option #{option}): #{ftypes} ."
 
@@ -54,21 +55,23 @@ defmodule Deduper do # Start of module
     start_time = System.monotonic_time(:millisecond)                # Start the VM clock
 
     # MAIN
-    IO.puts "Executing directory tree walktrough..."
+    IO.puts "==== PROGRESS INFO ===="
+    IO.puts "... change directory to path..."
     File.cd!(path, fn ->
       # TODO: Path.wildcard("#{path}/**/*.{#{ftypes}}")
       # ...maybe with wildcard = "#{path}/**/*.{#{ftypes},#{String.upcase(ftypes)}}"
       # ...Path.wildcard("#{wildcard}")
-      IO.puts "Executing filtering..."
-      IO.puts "Executing hash per file..."
+      IO.puts "... performing directory tree walktrough..."
       Path.wildcard("#{wildcard}")                                  # Show all relevant files in tree
+      #IO.puts "... calculating hash per file, and clustering..."
       |> Enum.filter( fn(filename) -> File.regular?(filename) end)  # Weed out dead links, etc.
-      IO.puts "Executing file-grouping..."
       |> Enum.group_by( fn(filename) ->                             # Calc sha256 per file, and group 'm.
-           "#{ :crypto.hash( :sha256, File.read!("#{filename}") ) |> Base.encode16 }"
+           # MD5 takes #{ (4088/7606) * 100}%, approx 54%, of the time SHA256 takes on 548 files."
+           "#{ :crypto.hash( :md5, File.read!("#{filename}") ) |> Base.encode16 }"
+           # "#{ :crypto.hash( :sha256, File.read!("#{filename}") ) |> Base.encode16 }"
           end)
       # Next, filter on hashes with more than 1 associated file (>1 element in the list)
-      IO.puts "Executing file-grouping on files with same hash..."
+      #IO.puts "... clustering files with same hash..."
       |> Enum.filter( fn {_hash, files} -> length(files) > 1 end)   # Filter on hash with multiple files
       |> Enum.each( fn {_hash, files} ->                            # For each cluster of duplicates do...
 
@@ -76,12 +79,13 @@ defmodule Deduper do # Start of module
             IO.puts "--- Start of #{ nr_of_dups } duplicate files ---"
             # TODO: While length(files) > 1 AND user_input <> do_nothing do...
             #   ask which file may be deleted, rinse and repeat
-            duplicates = Enum.with_index(files, 1)
+            duplicates = Enum.with_index(files, 1)                  # Add an index-nr to each duplicate
             IO.puts "Inspect duplicates: #{inspect duplicates}"
             Enum.each(duplicates, fn { filename, index} ->
-              IO.puts"#{index} - #{filename}" end)
+                IO.puts"#{index} - #{filename}"
+              end)
 
-            # TODO: (nr_of_dups - 1) * file-size can be freed
+            # TODO: (nr_of_dups - 1) * file-size of duplicates can be freed
             # total_size =
             #   Enum.sum(
             #     Enum.each(files, fn(filename) -> File.stat!(filename).size end)
@@ -106,7 +110,7 @@ defmodule Deduper do # Start of module
     # used_time = stop_time - start_time in milliseconds
     stop_time = System.monotonic_time(:millisecond)
     diff = stop_time - start_time
-    IO.puts "Processing took #{ diff/1000 } seconds."
+    IO.puts "Processing took #{ diff/1000 } seconds, roughly #{ Float.floor( diff/60_000, 2) } minutes."
 
   end
 
