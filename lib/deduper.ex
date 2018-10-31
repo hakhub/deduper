@@ -1,12 +1,14 @@
 defmodule Deduper do # Start of module
+
   @moduledoc """
   Documentation for Deduper.
   This module identifies duplicate files within a directory tree, shows them,
-  and when told to do so, deletes them.
-  Syntax: Deduper.find_dups(path, ftypes)
-  Author: Rogue
-  Lango:  Elixir
-  File:   deduper (folder with file-tree)
+  and (when it's programmed ;-) will delete selected duplicates, when told to do so.
+  Syntax:           Deduper.find_dups(path, ftypes)
+  Author:           Rogue
+  Lango:            Elixir
+  File-tree:        deduper (folder with file-tree)
+  Contributors:     Search in the comments for TODO to see where you can contribute.
   """
 
   @doc """
@@ -20,8 +22,7 @@ defmodule Deduper do # Start of module
   """
 
   # MAIN PROCESS
-  def find_dups(path \\ "/Users/rogier/Dropbox/Camera Uploads/2012",
-    option \\ "all") do
+  def find_dups(path \\ ".", option \\ "all") do
 
     # TODO: Make options Image, Movie, Audio, ..., All and Other to define extensions,
     # ...where All is the catch-all *.* wildcard, and Other checks third variable for
@@ -45,7 +46,7 @@ defmodule Deduper do # Start of module
 
     # TODO: check_ftypes(ftypes)
 
-    IO.puts "Options are: audio, document, image, video, all."
+    IO.puts "Options are: audio, document, image, video, all (default is all)."
     option = "all"
 
     # TODO: check available extensions for various file formats
@@ -63,12 +64,16 @@ defmodule Deduper do # Start of module
         _             -> "*"
       end
 
+    # This part provides process config information...
     IO.puts "==== COMMAND INFO ===="
     IO.puts "Path: #{path}. (Absolute path: don't forget the slash at the beginning.)"
     IO.puts "Extensions to look for (option #{option}): #{ftypes} ."
 
+    # This line creates the wildcard that defines what files to look for...
     wildcard = "#{path}/**/*.{#{ftypes},#{String.upcase(ftypes)}}"  # Create string for Path.wildcard
-    start_time = System.monotonic_time(:millisecond)                # Start the VM clock
+
+    # This line for process timing purposes, starting the timer...
+    start_time = System.monotonic_time(:millisecond)                # Start the VM clock/timer
 
     # MAIN
     IO.puts "==== PROGRESS INFO ===="
@@ -109,13 +114,13 @@ defmodule Deduper do # Start of module
             # IO.puts "--- End of duplicate files (total size #{total_size} bytes) ---"
             IO.puts "--- End of duplicate files  ---"
 
-          end)
+          end) # end of Enum.each
 
-    end)
+    end) # end of File.cd!
 
     # used_time = stop_time - start_time in milliseconds
-    stop_time = System.monotonic_time(:millisecond)
-    diff = stop_time - start_time
+    stop_time = System.monotonic_time(:millisecond)                 # Read process end-time of VM clock/timer
+    diff = stop_time - start_time                                   # Process-time is difference between start- and end-time
     IO.puts "Processing took #{ diff/1000 } seconds, roughly #{ Float.floor( diff/60_000, 2) } minutes."
 
   end
@@ -128,24 +133,8 @@ defmodule Deduper do # Start of module
         IO.puts "Going to read directory-tree from path: #{path}. Please take a cup of tea."
         path
       false ->
-        exit("Sorry, path #{path} does not exist (as a directory). Please provide a valid path.")
+        exit("Sorry, the path #{path} does not exist (as a directory). Please provide a valid path.")
     end
   end
 
-  # TODO: Aks for specific file-extensions to search for (so more than duplicate images can be handled).
-
-  # The wrapper provides Start and Stop information around a process
-  # def process_wrapper(option \\ "start") do
-  #   case option do
-  #     "start" ->
-  #       start_time = DateTime.utc_now
-  #       IO.puts "----------  #{String.upcase(option)} (time UTC = #{start_time}) ----------"
-  #     "stop" ->
-  #       stop_time = DateTime.utc_now
-  #       IO.puts "----------  #{String.upcase(option)} (time UTC = #{stop_time}, start was #{start_time}) ----------"
-  #       # TODO: Substract stop_time from start_time and show duration.
-  #   end
-  # end
-
 end # End of module
-
