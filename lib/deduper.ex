@@ -21,39 +21,26 @@ defmodule Deduper do # Start of module
 
   """
 
-  # MAIN PROCESS
+  ### MAIN PROCESS ###
   def find_dups(path \\ ".", option \\ "all") do
 
-    # TODO: Make options Image, Movie, Audio, ..., All and Other to define extensions,
-    # ...where All is the catch-all *.* wildcard, and Other checks third variable for
-    # ...provided extensions by user (i.e. Deduper.find_dups/3).
+    # START ###
+    # Checks if path is a valid path (i.e. exists).
+    case File.dir?(path) do
+      true  ->
+        path
+      false ->
+        exit("ERROR: Sorry, the path #{path} does not exist, or is no directory. Please provide a valid path.")
+    end
 
-    # TODO: check_path(path)
-      # Returns path if path given is a valid directory
-      # If no path is given, ask for the pathname to start the search for duplicate files
-      # def path_given(path \\ "") do
-      #   path =
-      #   case path do
-      #     "" ->
-      #       IO.puts "The path is the root of the directory-tree you want to check for duplicate files."
-      #         IO.gets "Please enter the path: "
-      #         |> String.trim
-      #     path ->
-      #       check_path(path)
-      #       path
-      #   end
-      # end
-
-    # TODO: check_ftypes(ftypes)
-
-    IO.puts "Options are: audio, document, image, video, all (default is all)."
-    option = "all"
-
+    # This part provide info and sets the extensions to search for (based on the chosen option, or the default)
     # TODO: check available extensions for various file formats
-    # TODO: complete options
+    IO.puts "Options are: audio, document, image, video, all (default is all)."
+
     ftypes =
       case option do
         # Avoid spaces between extensions (spaces are taken litterally by Path.wildcard).
+        # TODO: Check and complete related file extensions for each option (audio, image, etc.)
         # For most common extensions, see https://www.computerhope.com/issues/ch001789.htm ...
         # ...and https://fileinfo.com/filetypes/common
         "audio"       -> "mp3,aac,aif,aiff,wav"
@@ -66,8 +53,10 @@ defmodule Deduper do # Start of module
 
     # This part provides process config information...
     IO.puts "==== COMMAND INFO ===="
-    IO.puts "Path: #{path}. (Absolute path: don't forget the slash at the beginning.)"
+    IO.puts "Path (the root of the tree): #{path}."
+    IO.puts "(Absolute path: don't forget the slash at the beginning.)"
     IO.puts "Extensions to look for (option #{option}): #{ftypes} ."
+    IO.puts "Please take a cup of tea..."
 
     # This line creates the wildcard that defines what files to look for...
     wildcard = "#{path}/**/*.{#{ftypes},#{String.upcase(ftypes)}}"  # Create string for Path.wildcard
@@ -75,7 +64,7 @@ defmodule Deduper do # Start of module
     # This line for process timing purposes, starting the timer...
     start_time = System.monotonic_time(:millisecond)                # Start the VM clock/timer
 
-    # MAIN
+    # MAIN ###
     IO.puts "==== PROGRESS INFO ===="
     IO.puts "... change directory to path..."
     File.cd!(path, fn ->
@@ -114,27 +103,19 @@ defmodule Deduper do # Start of module
             # IO.puts "--- End of duplicate files (total size #{total_size} bytes) ---"
             IO.puts "--- End of duplicate files  ---"
 
-          end) # end of Enum.each
+        end) # end of Enum.each
 
-    end) # end of File.cd!
+      end) # end of File.cd!
 
+    # END ###
+    # This part provides end-of-process information
     # used_time = stop_time - start_time in milliseconds
     stop_time = System.monotonic_time(:millisecond)                 # Read process end-time of VM clock/timer
     diff = stop_time - start_time                                   # Process-time is difference between start- and end-time
+    IO.puts "==== END INFO ===="
     IO.puts "Processing took #{ diff/1000 } seconds, roughly #{ Float.floor( diff/60_000, 2) } minutes."
+    IO.puts ".oOo."
 
-  end
-
-  # Check validity of path-variable as a valid directory, returns path when valid, or exit..
-  # When no path is passed, it will return the current working directory as default.
-  def check_path(path \\ ".") do
-    case File.dir?(path) do
-      true  ->
-        IO.puts "Going to read directory-tree from path: #{path}. Please take a cup of tea."
-        path
-      false ->
-        exit("Sorry, the path #{path} does not exist (as a directory). Please provide a valid path.")
-    end
-  end
+  end # End of find_dups function
 
 end # End of module
