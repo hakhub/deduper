@@ -22,7 +22,7 @@ defmodule Deduper do # Start of module
   """
 
   ### MAIN PROCESS ###
-  def find_dups(path \\ ".", option \\ "all") do
+  def find_dups(path \\ ".", option \\ "all", extensions \\ "") do
 
     # START ###
     # Checks if path is a valid path (i.e. exists).
@@ -35,7 +35,8 @@ defmodule Deduper do # Start of module
 
     # This part provide info and sets the extensions to search for (based on the chosen option, or the default)
     # TODO: check available extensions for various file formats
-    IO.puts "Options are: audio, document, image, video, all (default is all)."
+    IO.puts "Options are: audio, document, image, video, all or other."
+    IO.puts "Default is all, while the option other uses the provided extensions (without a check)."
 
     ftypes =
       case option do
@@ -47,13 +48,14 @@ defmodule Deduper do # Start of module
         "document"    -> "doc,docx,ppt,pptx,xls,xlsx,pdf,txt,rtf,tex,odt"
         "image"       -> "jpg,jpeg,gif,png,tif,tiff,pic,pict,bmp"
         "video"       -> "3g2,3gp,avi,flv,h264,m4v,mkv,mov,mp4,mpeg,qt,vid,wmv"
+        "other"       -> extensions   # This enables the user to enter her own extensions, using the option "other"
         "all"         -> "*"
         _             -> "*"
       end
 
     # This part provides process config information...
     IO.puts "==== COMMAND INFO ===="
-    IO.puts "Path (the root of the tree): #{path}."
+    IO.puts "Path (the root of the tree): #{path} ."
     IO.puts "(Absolute path: don't forget the slash at the beginning.)"
     IO.puts "Extensions to look for (option #{option}): #{ftypes} ."
     IO.puts "Please take a cup of tea..."
