@@ -4,7 +4,8 @@ defmodule Deduper do # Start of module
   Documentation for Deduper.
   This module identifies duplicate files within a directory tree, shows them,
   and (when it's programmed ;-) will delete selected duplicates, when told to do so.
-  Syntax:           Deduper.find_dups(path, ftypes)
+  Syntax:           Deduper.find_dups( path, option, [extension(s)] ), 
+                    where option = audio, document, image, video, all or other (other uses the extensions).
   Author:           Rogue
   Lango:            Elixir
   File-tree:        deduper (folder with file-tree)
@@ -57,7 +58,7 @@ defmodule Deduper do # Start of module
     IO.puts "==== COMMAND INFO ===="
     IO.puts "Path (the root of the tree): #{path} ."
     IO.puts "(Absolute path: don't forget the slash at the beginning.)"
-    IO.puts "Extensions to look for (option #{option}): #{ftypes} ."
+    IO.puts "Extensions to look for (option #{option}): #{ftypes} )."
     IO.puts "Please take a cup of tea..."
 
     # This line creates the wildcard that defines what files to look for...
@@ -87,26 +88,19 @@ defmodule Deduper do # Start of module
       |> Enum.filter( fn {_hash, files} -> length(files) > 1 end)   # Filter on hash with multiple files
       |> Enum.each( fn {_hash, files} ->                            # For each cluster of duplicates do...
 
-            nr_of_dups = Enum.count(files)
-            IO.puts "--- Start of #{ nr_of_dups } duplicate files ---"
-            # TODO: While length(files) > 1 AND user_input <> do_nothing do...
-            #   ask which file may be deleted, rinse and repeat
-            duplicates = Enum.with_index(files, 1)                  # Add an index-nr to each duplicate
-            IO.puts "Inspect duplicates: #{inspect duplicates}"
-            Enum.each(duplicates, fn { filename, index} ->
-                IO.puts"#{index} - #{filename}"
-              end)
-
-            # TODO: (nr_of_dups - 1) * file-size of duplicates can be freed
-            # total_size =
-            #   Enum.sum(
-            #     Enum.each(files, fn(filename) -> File.stat!(filename).size end)
-            #   end)
-            # IO.puts "--- End of duplicate files (total size #{total_size} bytes) ---"
-            IO.puts "--- End of duplicate files  ---"
+          # DO SOMETHING WITH THE DUPLICATES FOUND...
+          nr_of_dups = Enum.count(files)
+          IO.puts "--- Start of #{ nr_of_dups } duplicate files ---"
+          # TODO: While length(files) > 1 AND user_input <> do_nothing do...
+          #   ask which file may be deleted, rinse and repeat
+          duplicates = Enum.with_index(files, 1)                  # Add an index-nr to each duplicate
+          Enum.each(duplicates, fn { filename, index} ->
+              IO.puts"#{index} - #{filename}"
+            end)
+          # TODO: Select files for deletion, renaming, printing, encrypting, reverse engineering or whatnot...
+          IO.puts "--- End of duplicate files  ---"
 
         end) # end of Enum.each
-
       end) # end of File.cd!
 
     # END ###
@@ -119,5 +113,4 @@ defmodule Deduper do # Start of module
     IO.puts ".oOo."
 
   end # End of find_dups function
-
 end # End of module
