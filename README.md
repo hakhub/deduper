@@ -35,6 +35,8 @@ Extensive comments are added to explain code syntax (yep, also for myself) and c
 
 If you enjoy the pains of programming, please read the `git log` as well. :wink:
 
+Tags: _Elixir, Erlang, duplicate files, duplicates, search files, traverse directories, traverse directory tree, learn to program, learning, education_
+
 
 # Contributors are invited
 
