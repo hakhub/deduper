@@ -4,7 +4,7 @@ defmodule Deduper do # Start of module
   Documentation for Deduper.
   This module identifies duplicate files within a directory tree, shows them,
   and (when it's programmed ;-) will delete selected duplicates, when told to do so.
-  Syntax:           Deduper.find_dups( path, option, [extension(s)] ), 
+  Syntax:           Deduper.find_dups( path, option, [extension(s)] ),
                     where path is the root of the directory-tree to be traversed
                     (absolute path: don't forget the slash at the beginning.)
                     where option = audio, document, image, video, all or other (other uses the extensions).
@@ -25,7 +25,7 @@ defmodule Deduper do # Start of module
   """
 
   ### MAIN PROCESS ###
-  def find_dups(path \\ ".", option \\ "all", extensions \\ "") do
+  def find_dups(path \\ ".") do
 
     # START ###
     # Checks if path is a valid path (i.e. exists).
@@ -36,25 +36,6 @@ defmodule Deduper do # Start of module
         exit("ERROR: Sorry, the path #{path} does not exist, or is no directory. Please provide a valid path.")
     end
 
-    # This part provide info and sets the extensions to search for (based on the chosen option, or the default)
-    # TODO: check available extensions for various file formats
-    IO.puts "Options are: audio, document, image, video, all or other."
-    IO.puts "Default is all, while the option other uses the provided extensions (without a check)."
-
-    ftypes =
-      case option do
-        # Avoid spaces between extensions (spaces are taken litterally by Path.wildcard).
-        # TODO: Check and complete related file extensions for each option (audio, image, etc.)
-        # For most common extensions, see https://www.computerhope.com/issues/ch001789.htm ...
-        # ...and https://fileinfo.com/filetypes/common
-        "audio"       -> "mp3,aac,aif,aiff,wav"
-        "document"    -> "doc,docx,ppt,pptx,xls,xlsx,pdf,txt,rtf,tex,odt"
-        "image"       -> "jpg,jpeg,gif,png,tif,tiff,pic,pict,bmp"
-        "video"       -> "3g2,3gp,avi,flv,h264,m4v,mkv,mov,mp4,mpeg,qt,vid,wmv"
-        "other"       -> extensions   # This enables the user to enter her own extensions, using the option "other"
-        "all"         -> "*"
-        _             -> "*"
-      end
 
     # This part provides process config information...
     IO.puts "==== COMMAND INFO ========"
@@ -62,12 +43,12 @@ defmodule Deduper do # Start of module
 
     IO.puts "==== USER CONFIG INFO ===="
     IO.puts "Path (the root of the tree): #{path} ."
-    IO.puts "Extensions to look for (option: #{option}): #{ftypes} ."
+    ###IO.puts "Extensions to look for (option: #{option}): #{ftypes} ."
     IO.puts "Please take a cup of tea..."
 
     # This line creates the wildcard that defines what files to look for...
-    wildcard = "#{path}/**/*.{#{ftypes},#{String.upcase(ftypes)}}"  # Create string for Path.wildcard
-
+    ####wildcard = "#{path}/**/*.{#{ftypes},#{String.upcase(ftypes)}}"  # Create string for Path.wildcard
+    wildcard = "#{path}/**/*.*"
     # This line for process timing purposes, starting the timer...
     start_time = System.monotonic_time(:millisecond)                # Start the VM clock/timer
 
